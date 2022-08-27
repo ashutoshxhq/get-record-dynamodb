@@ -1,7 +1,7 @@
-use aws_sdk_dynamodb::{Client};
+use aws_sdk_dynamodb::Client;
 use egnitely_client::{HandlerError, RequestContext, Result};
 use serde::{Deserialize, Serialize};
-use serde_dynamo::aws_sdk_dynamodb_0_17::{to_item, from_item};
+use serde_dynamo::aws_sdk_dynamodb_0_17::{from_item, to_item};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
@@ -16,7 +16,7 @@ struct FunctionContextData {
 pub async fn handler(mut _ctx: RequestContext, _input: Value) -> Result<Value> {
     let context_data = serde_json::from_value::<FunctionContextData>(_ctx.data())?;
     let input_data = serde_json::from_value::<HashMap<String, Value>>(_input)?;
-    let mut record: Value  = json!({});
+    let mut record: Value = json!({});
     if let Some(sdk_config) = _ctx.aws_sdk_config() {
         let client = Client::new(&sdk_config);
         let item = client
@@ -25,12 +25,12 @@ pub async fn handler(mut _ctx: RequestContext, _input: Value) -> Result<Value> {
             .set_key(Some(to_item(input_data)?))
             .send()
             .await?;
-		if let Some(item_data) = item.item() {
-			record = from_item(item_data.clone())?;
-		}
+        if let Some(item_data) = item.item() {
+            record = from_item(item_data.clone())?;
+        }
         Ok(json!({
                 "message": "Successfully retrived 1 record",
-				"data": record
+                "data": record
         }))
     } else {
         return Err(Box::new(HandlerError::new(
